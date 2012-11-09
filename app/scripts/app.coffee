@@ -1,4 +1,6 @@
 define [], ->
-  return {
-    'MidiChanged' : (newMidi) -> console.log newMidi
-  }
+  class App
+    MidiChanged: (newMidiFile) ->
+      console.log newMidiFile
+
+  return new App()
