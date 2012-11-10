@@ -1,20 +1,21 @@
 define([], function() {
   function App() {
-    this.pixelsPerBeat = 20;
 
+    this.pixelsPerBeat = 80;
 
     this.OnLoad = function(){
       //define progromatically based on window size
       var x = 300; 
       var y = 205; 
-      var width = 850; 
-      this.height = 200; 
 
       // make something up.
-      this.maxTime = 850;
+      this.maxTime = 100;
+      this.height = 128;
 
       // created Raphael paper on which to draw
-      this.paper = new Raphael(x, y, this.maxTime, this.height);
+      this.paper = new Raphael('score');
+      this.SetViewBox(this.maxTime, this.height);
+      this.paper.canvas.setAttribute('height', '100%');
       this.ResizeCanvas();
 
       // taken from http://jsdo.it/remmel/1qGu
@@ -28,8 +29,6 @@ define([], function() {
 
         return this.path(array);
       };
-
-      this.paper.roundedRectangle(500, 70, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
     }
 
     this.MidiChanged = function(data){
@@ -37,15 +36,16 @@ define([], function() {
       // absolute time.
       var time = 0;
       for(var i = 0; i < data.length; ++i){
-        data[i][0].time = time;
         time += data[i][0].beatsToEvent;
+        data[i][0].event.time = time;
       }
 
       // clear the events
       this.ClearEvents();
 
       // set the maximum time to the last note's time.
-      this.maxTime = data[data.length - 1][0].time;
+      this.maxTime = data[data.length - 1][0].event.time
+      this.SetViewBox(this.maxTime, this.height);
       this.ResizeCanvas();
 
       // Run through each event and "handle it"
@@ -56,25 +56,30 @@ define([], function() {
     };
 
     this.ResizeCanvas = function(){
-      this.paper.setSize(this.maxTime * this.pixelsPerBeat, this.height);
+      this.paper.canvas.setAttribute('width', this.maxTime * this.pixelsPerBeat);
       if(this.placemat)
         this.placemat.remove();
-      this.placemat = this.paper.rect(0,0,this.paper.width,this.paper.height).attr({"fill" : "#333333" });
+      this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
+    }
+    
+    this.SetViewBox = function(w, h){
+      this.paper.setViewBox(0, 0, w, h, true);
+      this.paper.canvas.setAttribute('preserveAspectRatio', 'none');
+      this.canvasW = w;
+      this.canvasH = h;
     }
 
     this.ClearEvents = function(){
       this.currentNotes = [];
-
-      var placemat = this.paper.rect(0,0,this.paper.width,this.paper.height).attr({"fill" : "#333333" });
-      
-
     };
 
     this.HandleEvent =  function(event){
       if (event.type !== 'channel') {
           return;
       }
-
+      var filter = function(note){
+        return (note.channel === event.channel) && (note.note === event.noteNumber);
+      }
       switch(event.subtype){
         case 'noteOn':
           this.currentNotes.push({
@@ -82,12 +87,9 @@ define([], function() {
             channel: event.channel,
             startTime: event.time
           })
+        
           break;
         case 'noteOff':
-          var filter = function(note){
-            return (note.channel === event.channel) && (note.note === event.noteNumber);
-          }
-
           for(var i = 0; i < this.currentNotes.length; ++i)
           {
             var note = this.currentNotes[i];
@@ -107,7 +109,9 @@ define([], function() {
     };
 
     this.DrawNote = function(note){
+      this.paper.rect(note.startTime, (128 - note.note) - .5, note.endTime - note.startTime, 1).attr({fill: "#f00", stroke:'none'});
     };
+
     return this;
   };
       
