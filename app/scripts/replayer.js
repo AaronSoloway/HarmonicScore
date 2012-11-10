@@ -48,6 +48,7 @@ return function (midiFile, timeWarp, eventProcessor) {
 			}
 			return {
 				"ticksToEvent": ticksToNextEvent,
+                "beatsToEvent": ticksToNextEvent / ticksPerBeat,
 				"event": nextEvent,
 				"track": nextEventTrack
 			}

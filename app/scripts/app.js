@@ -1,20 +1,22 @@
 define([], function() {
   function App() {
-    this.OnLoad = function(){
-      console.log("hey");
+    this.pixelsPerBeat = 20;
 
+
+    this.OnLoad = function(){
       //define progromatically based on window size
       var x = 300; 
       var y = 205; 
       var width = 850; 
-      var height = 200; 
+      this.height = 200; 
+
+      // make something up.
+      this.maxTime = 850;
 
       // created Raphael paper on which to draw
-      var paper = new Raphael(x, y, width, height); //option (a) 
-      
-      // color background so you know where the canvas is
-      var placemat = paper.rect(0,0,paper.width,paper.height).attr({"fill" : "#333333" });
-      
+      this.paper = new Raphael(x, y, this.maxTime, this.height);
+      this.ResizeCanvas();
+
       // taken from http://jsdo.it/remmel/1qGu
       // roundedRectangle(x, y, width, height, upper_left_corner, upper_right_corner, lower_right_corner, lower_left_corner)
       Raphael.fn.roundedRectangle = function (x, y, w, h, r1, r2, r3, r4){
@@ -27,29 +29,48 @@ define([], function() {
         return this.path(array);
       };
 
-      //Pretend!  This is what a few nots might look like sans harmonics
-      paper.roundedRectangle(10, 10, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
-      paper.roundedRectangle(100, 150, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
-      paper.roundedRectangle(200, 100, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
-      paper.roundedRectangle(500, 70, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
-      
-      console.log("loaded");
+      this.paper.roundedRectangle(500, 70, 80, 5, 1, 1, 1, 1).attr({fill: "#f00"});
     }
+
     this.MidiChanged = function(data){
-      this.ClearEvents();
+      // Run through whole file converting from delta times to
+      // absolute time.
       var time = 0;
-      for(var i = 0; i < data.length; ++i)
-      {
-        this.HandleEvent(data[i][0].event, time);
-        time += data[i][0].ticksToEvent;
+      for(var i = 0; i < data.length; ++i){
+        data[i][0].time = time;
+        time += data[i][0].beatsToEvent;
       }
+
+      // clear the events
+      this.ClearEvents();
+
+      // set the maximum time to the last note's time.
+      this.maxTime = data[data.length - 1][0].time;
+      this.ResizeCanvas();
+
+      // Run through each event and "handle it"
+      for(i = 0; i < data.length; ++i){
+        this.HandleEvent(data[i][0].event);
+      }
+
     };
+
+    this.ResizeCanvas = function(){
+      this.paper.setSize(this.maxTime * this.pixelsPerBeat, this.height);
+      if(this.placemat)
+        this.placemat.remove();
+      this.placemat = this.paper.rect(0,0,this.paper.width,this.paper.height).attr({"fill" : "#333333" });
+    }
 
     this.ClearEvents = function(){
       this.currentNotes = [];
+
+      var placemat = this.paper.rect(0,0,this.paper.width,this.paper.height).attr({"fill" : "#333333" });
+      
+
     };
 
-    this.HandleEvent =  function(event, time){
+    this.HandleEvent =  function(event){
       if (event.type !== 'channel') {
           return;
       }
@@ -59,7 +80,7 @@ define([], function() {
           this.currentNotes.push({
             note: event.noteNumber,
             channel: event.channel,
-            startTime: time
+            startTime: event.time
           })
           break;
         case 'noteOff':
@@ -71,7 +92,7 @@ define([], function() {
           {
             var note = this.currentNotes[i];
             if (filter(note)) {
-              note.endTime = time;
+              note.endTime = event.time;
               this.DrawNote(note);
             }
           }
@@ -86,7 +107,6 @@ define([], function() {
     };
 
     this.DrawNote = function(note){
-      console.log(note);
     };
     return this;
   };
