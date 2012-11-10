@@ -9,6 +9,7 @@ require.config({
  
 require(['midifile', 'app', 'replayer'], function(midifile, app, Replayer) {
 
+    app.OnLoad();
 
     $("#file-input").change(function() {
         reader = new FileReader();
