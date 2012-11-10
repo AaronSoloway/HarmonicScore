@@ -1,10 +1,10 @@
-define([], function() {
+define(['mtofTable'], function(mtof) {
   function App() {
     this.pixelsPerBeat = 20;
-
+    this.numHarmonics = 10;
 
     this.OnLoad = function(){
-      //define progromatically based on window size
+      //define based on window size
       var x = 300; 
       var y = 205; 
       var width = 850; 
@@ -106,8 +106,19 @@ define([], function() {
       }
     };
 
-    this.DrawNote = function(note){
+    // Draws a note on the paper 
+    this.CalculateHarmonics = function(note, refPitch, temperament){
+      // takes a MIDI note number and outputs its frequency
+      complexNote[0] = mtof(noteNumber);
+
+      for (var i = 2; i <= numHarmonics; i++) {
+        complexNote[i-1] = i * complexNote[0];
+      }
     };
+
+    // Calculate Harmonics
+    this. = 
+
     return this;
   };
       
