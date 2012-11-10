@@ -7,12 +7,13 @@ require.config({
   }
 });
  
-require(['midifile', 'app'], function(midifile, app) {
+require(['midifile', 'app', 'replayer'], function(midifile, app, Replayer) {
 
     $("#file-input").change(function() {
         reader = new FileReader();
         reader.onloadend = function() {
-            app.MidiChanged(midifile(reader.result));
+            var replayer = new Replayer(midifile(reader.result));
+            app.MidiChanged(replayer.getData());
         }
         reader.readAsBinaryString(this.files[0]);
     });
