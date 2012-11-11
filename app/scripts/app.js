@@ -1,4 +1,4 @@
-define(['mtofTable'], function(mtof) {
+define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
   function App() {
 
     this.maxFrequency = 20000;
@@ -7,6 +7,10 @@ define(['mtofTable'], function(mtof) {
     this.pixelsPerBeat = 80;
     this.funFreqHeight = 130/this.maxFrequency; //this puts it in terms of frequency height
     this.harmFreqHeight = 50/this.maxFrequency; //this puts it in terms of frequency height
+
+    this.funBrightness = .9; // "V" value in HSV of fundamental
+    this.harmBrightness = .8;
+
     this.logMaxFreq = Math.log(this.maxFrequency);
     this.logMinFreq = Math.log(this.minFrequency);
     this.logMaxFreqMinuslogMinFreq = this.logMaxFreq - this.logMinFreq;
@@ -60,7 +64,6 @@ define(['mtofTable'], function(mtof) {
       for(i = 0; i < data.length; ++i){
         this.HandleEvent(data[i][0].event);
       }
-
     };
 
     this.ResizeCanvas = function(){
@@ -139,14 +142,14 @@ define(['mtofTable'], function(mtof) {
       this.paper.rect(note.startTime, 
                       1 - (this.funFreqHeight / 2) - (Math.log(complexNote[0]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
                       note.endTime - note.startTime, 
-                      this.funFreqHeight).attr({fill: "#f00", stroke:'none'});
+                      this.funFreqHeight).attr({fill: freqToColor(complexNote[0], 440, this.funBrightness), stroke:'none'});
       var harmonicOpacity = 0.9;
       for (var i = 1; i < complexNote.length; i++) {
 
         this.paper.rect(note.startTime, 
                         1 - (this.harmFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
                         note.endTime - note.startTime, 
-                        this.harmFreqHeight).attr({fill: "#f55", stroke:'none', opacity: harmonicOpacity});
+                        this.harmFreqHeight).attr({fill: freqToColor(complexNote[i], 440, this.harmBrightness), stroke:'none', opacity: harmonicOpacity});
         harmonicOpacity = harmonicOpacity - 0.1;
       }
     };
