@@ -311,7 +311,7 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
             var minOpacity = harmonicOpacity - (beatInfo.prominence / 2 * harmonicOpacity);
             var maxOpacity = harmonicOpacity + (beatInfo.prominence / 2 * harmonicOpacity);
 
-            var beatHeight = this.harmFreqHeight * 3 * beatInfo.prominence;
+            var beatHeight = this.harmFreqHeight * 4 * beatInfo.prominence;
             var beat = this.paper.rect(beatInfo.startTime, 
                                        this.freqToY(complexNote[i].frequency, beatHeight),
                                        beatInfo.endTime - beatInfo.startTime, 
