@@ -11,6 +11,11 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     this.funBrightness = .9; // "V" value in HSV of fundamental
     this.harmBrightness = .8;
 
+    this.useColor = true;
+
+    this.data = [];
+
+    // pre-computed logs for efficiency?
     this.logMaxFreq = Math.log(this.maxFrequency);
     this.logMinFreq = Math.log(this.minFrequency);
     this.logMaxFreqMinuslogMinFreq = this.logMaxFreq - this.logMinFreq;
@@ -29,6 +34,7 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       this.SetViewBox(this.maxTime, this.height);
       this.paper.canvas.setAttribute('height', '100%');
       this.ResizeCanvas();
+      this.ClearEvents();
 
       // taken from http://jsdo.it/remmel/1qGu
       // roundedRectangle(x, y, width, height, upper_left_corner, upper_right_corner, lower_right_corner, lower_left_corner)
@@ -43,17 +49,11 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       };
     };
 
-    this.MidiChanged = function(data){
-      // Run through whole file converting from delta times to
-      // absolute time.
-      var time = 0;
-      for(var i = 0; i < data.length; ++i){
-        time += data[i][0].beatsToEvent;
-        data[i][0].event.time = time;
-      }
-
+    this.Render = function(){
       // clear the events
       this.ClearEvents();
+      
+      var data = this.data;
 
       // set the maximum time to the last note's time.
       this.maxTime = data[data.length - 1][0].event.time
@@ -64,13 +64,24 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       for(i = 0; i < data.length; ++i){
         this.HandleEvent(data[i][0].event);
       }
+    }
+
+    this.MidiChanged = function(data){
+      this.data = data;
+
+      // Run through whole file converting from delta times to
+      // absolute time.
+      var time = 0;
+      for(var i = 0; i < data.length; ++i){
+        time += data[i][0].beatsToEvent;
+        data[i][0].event.time = time;
+      }
+
+      this.Render();
     };
 
     this.ResizeCanvas = function(){
       this.paper.canvas.setAttribute('width', this.maxTime * this.pixelsPerBeat);
-      if(this.placemat)
-        this.placemat.remove();
-      this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
     };
     
     this.SetViewBox = function(w, h){
@@ -82,6 +93,10 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
     this.ClearEvents = function(){
       this.currentNotes = [];
+      this.paper.clear();
+      if(this.placemat)
+        this.placemat.remove();
+      this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
     };
 
     this.HandleEvent =  function(event){
@@ -139,17 +154,28 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       var complexNote = new Array();
       complexNote = this.CalculateHarmonics(note);
 
+      var harmColor, funColor;
+
+      if(this.useColor)
+        funColor = freqToColor(complexNote[0], 440, this.funBrightness);
+      else
+        funColor = "#f00";
+      
       this.paper.rect(note.startTime, 
                       1 - (this.funFreqHeight / 2) - (Math.log(complexNote[0]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
                       note.endTime - note.startTime, 
-                      this.funFreqHeight).attr({fill: freqToColor(complexNote[0], 440, this.funBrightness), stroke:'none'});
+                      this.funFreqHeight).attr({fill: funColor, stroke:'none'});
       var harmonicOpacity = 0.9;
       for (var i = 1; i < complexNote.length; i++) {
+        if(this.useColor)
+          harmColor =  freqToColor(complexNote[i], 440, this.harmBrightness);
+        else
+          harmColor= "#f55";
 
         this.paper.rect(note.startTime, 
                         1 - (this.harmFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
                         note.endTime - note.startTime, 
-                        this.harmFreqHeight).attr({fill: freqToColor(complexNote[i], 440, this.harmBrightness), stroke:'none', opacity: harmonicOpacity});
+                        this.harmFreqHeight).attr({fill: harmColor, stroke:'none', opacity: harmonicOpacity});
         harmonicOpacity = harmonicOpacity - 0.1;
       }
     };
