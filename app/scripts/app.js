@@ -1,8 +1,16 @@
 define(['mtofTable'], function(mtof) {
   function App() {
 
+    this.maxFrequency = 20000;
+    this.minFrequency = 20;
     this.numHarmonics = 10;
     this.pixelsPerBeat = 80;
+    this.funFreqHeight = 100/this.maxFrequency; //this puts it in terms of frequency height
+    this.harmFreqHeight = 50/this.maxFrequency; //this puts it in terms of frequency height
+    this.logMaxFreq = Math.log(this.maxFrequency);
+    this.logMinFreq = Math.log(this.minFrequency);
+    this.logMaxFreqMinuslogMinFreq = this.logMaxFreq - this.logMinFreq;
+
 
     this.OnLoad = function(){
       //define based on window size
@@ -30,7 +38,7 @@ define(['mtofTable'], function(mtof) {
 
         return this.path(array);
       };
-    }
+    };
 
     this.MidiChanged = function(data){
       // Run through whole file converting from delta times to
@@ -61,14 +69,14 @@ define(['mtofTable'], function(mtof) {
       if(this.placemat)
         this.placemat.remove();
       this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
-    }
+    };
     
     this.SetViewBox = function(w, h){
       this.paper.setViewBox(0, 0, w, h, true);
       this.paper.canvas.setAttribute('preserveAspectRatio', 'none');
       this.canvasW = w;
       this.canvasH = h;
-    }
+    };
 
     this.ClearEvents = function(){
       this.currentNotes = [];
@@ -111,33 +119,39 @@ define(['mtofTable'], function(mtof) {
     };
 
 
-    // Draws a note on the paper 
+    // Calculate Harmonics
     this.CalculateHarmonics = function(note){
       // takes a MIDI note number and outputs its frequency
-      console.log(note.noteMIDINum);
       var complexNote = new Array();
       complexNote[0] = mtof(note.noteMIDINum).frequency;
 
-      console.log(complexNote[0]);
       for (var i = 1; i < this.numHarmonics; i++) {
         complexNote[i] = (i+1)*complexNote[0];
-        console.log(i, complexNote[i]);
       }
       return complexNote;
     };
 
-    // Calculate Harmonics
-   
 
+    // Draws a note on the paper 
     this.DrawNote = function(note){
       var complexNote = new Array();
       complexNote = this.CalculateHarmonics(note);
-      this.paper.rect(note.startTime, (this.height - note.noteMIDINum) - .5, note.endTime - note.startTime, 1).attr({fill: "#f00", stroke:'none'});
-      
-      //this.paper.rect(note.startTime, (this.height - note.noteMIDINum) - .5, note.endTime - note.startTime, 1).attr({fill: "#f00", stroke:'none'});
-         
+
+      //console.log(this.log2(this.maxFrequency / (complexNote[i])));
+
+      // TODO: adjust height to compensate for drawing offset
+      for (var i = 0; i < complexNote.length; i++) {
+        console.log(complexNote[i]);
+        this.paper.rect(note.startTime, 
+                        1 - (this.funFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
+                        note.endTime - note.startTime, 
+                        this.funFreqHeight).attr({fill: "#f00", stroke:'none'});
+      }
     };
 
+    this.log2 = function(val){
+      return Math.log(val) / Math.log(2);
+    };
 
     return this;
   };
