@@ -28,8 +28,31 @@
                       <li class="active"><a id="colorSelect" href="#">Color</a></li>
                       <li><a href="#" id="bwSelect">Black and White</a></li>
                       <li class="divider"></li>
+
                       <li class="active"><a id="logScale" href="#">Logarithmic Scale</a></li>
                       <li><a href="#" id="linScale">Linear Scale</a></li>
+                      <li class="divider"></li>
+                      <li class="active"><a id="animateBeats" href="#">Animate Beats</a></li>
+                      <li><a href="#" id="highlightBeats">Highlight Beats</a></li>
+                    </ul>
+                  </li>
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Intonation</a>
+                    <ul class="dropdown-menu">
+                      <li class="active"><a id="equalTemperament" href="#">Equal</a></li>
+                      <li class="divider"></li>
+                      <li><a href="#" id="0" class="limit5">Just Intonation - C</a></li>
+                      <li><a href="#" id="1" class="limit5">Just Intonation - C#</a></li>
+                      <li><a href="#" id="2" class="limit5">Just Intonation - D</a></li>
+                      <li><a href="#" id="3" class="limit5">Just Intonation - Eb</a></li>
+                      <li><a href="#" id="4" class="limit5">Just Intonation - E</a></li>
+                      <li><a href="#" id="5" class="limit5">Just Intonation - F</a></li>
+                      <li><a href="#" id="6" class="limit5">Just Intonation - F#</a></li>
+                      <li><a href="#" id="7" class="limit5">Just Intonation - G</a></li>
+                      <li><a href="#" id="8" class="limit5">Just Intonation - Ab</a></li>
+                      <li><a href="#" id="9" class="limit5">Just Intonation - A</a></li>
+                      <li><a href="#" id="10" class="limit5">Just Intonation - Bb</a></li>
+                      <li><a href="#" id="11" class="limit5">Just Intonation - B</a></li>
                     </ul>
                   </li>
                 </ul>
@@ -43,6 +66,7 @@
           <div class="navbar-inner">
               <div class="nav-collapse collapse">
                 <ul class="nav">
+                  <li><a style="cursor:pointer" href="#help" data-toggle="modal">Help</a></li>
                   <li><a style="cursor:pointer" href="#about" data-toggle="modal">About HarmonicScore</a></li>
                 </ul>
             </div>
@@ -50,6 +74,26 @@
         </div>
 
       </div>
+      <div class="modal fade" id="help" align="center">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">&times;</a>
+          <h3>HarmonicScore Help</h3>
+        </div>
+        <div class="modal-body">
+          <div class='modal-body'>
+            <br>
+            <p style="text-align: center;">
+              HarmonicScore is a way of visualizing the harmonic interactions implicit in musical scores.  The X-axis represents time, and the Y-axis represents frequency.  Stronger, wider lines represent notes and thinner, lighter lines represent their harmonics.  If two harmonics are close enough together in frequency to cause audible beating effects, their interaction is highlighted by a subtle blinking.  The more noticable the beating interaction, the more intense the highlight.
+            </p>
+            <br>
+            <br>
+            <p style="text-align: justify">
+            </p>
+          </div>
+        </div>
+      </div>
+
+
       <div class="modal fade" id="about" align="center">
         <div class="modal-header">
           <a class="close" data-dismiss="modal">&times;</a>
@@ -101,5 +145,5 @@
 
         </script>
     
-    <script src="scripts/989b1c1f.amd-app.js"></script>
+    <script src="scripts/f2e34229.amd-app.js"></script>
 </html>
