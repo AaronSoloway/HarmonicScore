@@ -61,4 +61,19 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
       app.animateBeats = false;
       app.Render();
     });
+
+    $("#equalTemperament").click(function() {
+      $("#equalTemperament").parent().addClass('active');
+      $(".limit5").parent().removeClass('active');
+      app.SetIntonation(0, "equal");
+      app.ProcessData();
+    });
+  
+    $(".limit5").click(function(a) {
+      $("#equalTemperament").parent().removeClass('active');
+      $(".limit5").parent().removeClass('active');
+      $(a.target).parent().addClass('active');
+      app.SetIntonation(parseInt(a.target.getAttribute('id')), "limit5");
+      app.ProcessData();
+    });
 });

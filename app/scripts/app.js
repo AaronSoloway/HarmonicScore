@@ -1,7 +1,8 @@
-define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, freqToColor, GetBeat) {
+define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], function(equalTemperament, limit5, freqToColor, GetBeat) {
   function App() {
 
     this.intonation = equalTemperament;
+    this.key = 0;
 
     this.maxFrequency = 20000;
     this.maxLinFrequency = 5000;
@@ -19,6 +20,8 @@ define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, 
     this.logScale = true;
     this.animateBeats = true;
 
+    // holds unprocessed notes
+    this.data = [];
     // notes holds processed note data
     this.notes = [];
     // beats holds processed beat data
@@ -54,7 +57,9 @@ define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, 
       }
     }
 
-    this.MidiChanged = function(data){
+    this.ProcessData = function() {
+      data = this.data;
+
       // clear the events
       this.ClearEvents();
 
@@ -77,6 +82,12 @@ define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, 
       this.ResizeCanvas();
 
       this.Render();
+    }
+
+    this.MidiChanged = function(data){
+      this.data = data;
+
+      this.ProcessData();
     };
 
     this.ResizeCanvas = function(){
@@ -97,6 +108,15 @@ define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, 
       this.beats = [];
       this.Clear();
     }
+
+    this.SetIntonation = function(key, intone){
+      console.log(key, intone);
+      this.key = key;
+      if(intone === "equal")
+        this.intonation = equalTemperament;
+      else
+        this.intonation = limit5(key);
+    } 
 
     this.Clear = function(){
        this.paper.clear();
