@@ -137,13 +137,6 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
           if(beat){
             // let's add the beat frequency to both the current note's harmonic
             // and the other notes.
-            f1.beats.push({
-              'baseFreq': f1,
-              'other': f2,
-              'frequency': beat.frequency,
-              'prominence': beat.prominence,
-              'startTime': note.startTime
-            });
             f2.beats.push({
               'baseFreq': f2,
               'other': f1,
@@ -195,7 +188,7 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
         // that contains this as an overtone,
         // and add them to our global list of beats.
         var oldBeats = this.currentBeats;
-        this.currentBeats= [];
+        this.currentBeats = [];
         for(j = 0; j < oldBeats.length; ++j){
           if((oldBeats[j].f1 !== overtone) &&
              (oldBeats[j].f2 !== overtone))
