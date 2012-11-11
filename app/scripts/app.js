@@ -16,7 +16,14 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     this.useColor = true;
     this.logScale = true;
 
+    // data holds unprocessed note data
     this.data = [];
+    // notes holds processed note data
+    this.notes = [];
+    // holds the maximum time scale
+    this.maxTime = 100;
+    // make something up.
+    this.height = 1;
 
     // pre-computed logs for efficiency?
     this.logMaxFreq = Math.log(this.maxFrequency);
@@ -24,52 +31,31 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     this.logMaxFreqMinuslogMinFreq = this.logMaxFreq - this.logMinFreq;
 
     this.OnLoad = function(){
-      //define based on window size
-      var x = 300; 
-      var y = 205; 
-
-      // make something up.
-      this.maxTime = 100;
-      this.height = 1;
-
-      // created Raphael paper on which to draw
+      // create Raphael paper on which to draw
       this.paper = new Raphael('score');
       this.SetViewBox(this.maxTime, this.height);
       this.paper.canvas.setAttribute('height', '100%');
       this.ResizeCanvas();
       this.ClearEvents();
-
-      // taken from http://jsdo.it/remmel/1qGu
-      // roundedRectangle(x, y, width, height, upper_left_corner, upper_right_corner, lower_right_corner, lower_left_corner)
-      Raphael.fn.roundedRectangle = function (x, y, w, h, r1, r2, r3, r4){
-        var array = [];
-        array = array.concat(["M",x,r1+y, "Q",x,y, x+r1,y]); //A
-        array = array.concat(["L",x+w-r2,y, "Q",x+w,y, x+w,y+r2]); //B
-        array = array.concat(["L",x+w,y+h-r3, "Q",x+w,y+h, x+w-r3,y+h]); //C
-        array = array.concat(["L",x+r4,y+h, "Q",x,y+h, x,y+h-r4, "Z"]); //D
-
-        return this.path(array);
-      };
     };
 
     this.Render = function(){
-      // clear the events
-      this.ClearEvents();
-      
-      var data = this.data;
+      var data = this.notes;
 
       // set the maximum time to the last note's time.
-      this.maxTime = data[data.length - 1][0].event.time
-      this.SetViewBox(this.maxTime, this.height);
-      this.ResizeCanvas();
+      this.Clear();
 
-      // Run through each event and "handle it"
-      for(i = 0; i < data.length; ++i){
-        this.HandleEvent(data[i][0].event);
+      // draw each note
+      for(var i = 0; i < data.length; ++i){
+        this.DrawNote(data[i]);
       }
     }
 
     this.MidiChanged = function(data){
+      // clear the events
+      this.ClearEvents();
+
+      // set the processed data
       this.data = data;
 
       // Run through whole file converting from delta times to
@@ -79,6 +65,16 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
         time += data[i][0].beatsToEvent;
         data[i][0].event.time = time;
       }
+
+      // process Notes
+      // Run through each event and "handle it"
+      for(i = 0; i < data.length; ++i){
+        this.HandleEvent(data[i][0].event);
+      }
+
+      this.maxTime = this.notes[this.notes.length - 1].endTime;
+      this.SetViewBox(this.maxTime, this.height);
+      this.ResizeCanvas();
 
       this.Render();
     };
@@ -96,9 +92,13 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
     this.ClearEvents = function(){
       this.currentNotes = [];
-      this.paper.clear();
-      if(this.placemat)
-        this.placemat.remove();
+      this.data = [];
+      this.notes = [];
+      this.Clear();
+    }
+
+    this.Clear = function(){
+       this.paper.clear();
       this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
     };
 
@@ -125,7 +125,8 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
             var note = this.currentNotes[i];
             if (filter(note)) {
               note.endTime = event.time;
-              this.DrawNote(note);
+              this.CalculateHarmonics(note);
+              this.notes.push(note);
             }
           }
           var oldNotes = this.currentNotes;
@@ -138,17 +139,15 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       }
     };
 
-
     // Calculate Harmonics
     this.CalculateHarmonics = function(note){
       // takes a MIDI note number and outputs its frequency
-      var complexNote = new Array();
-      complexNote[0] = mtof(note.noteMIDINum).frequency;
+      note.complexNote = new Array();
+      note.complexNote[0] = mtof(note.noteMIDINum).frequency;
 
       for (var i = 1; i < this.numHarmonics; i++) {
-        complexNote[i] = (i+1)*complexNote[0];
+        note.complexNote[i] = (i+1)*note.complexNote[0];
       }
-      return complexNote;
     };
 
     this.freqToY = function(f, h){
@@ -160,10 +159,8 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
     // Draws a note on the paper 
     this.DrawNote = function(note){
-      var complexNote = new Array();
-      complexNote = this.CalculateHarmonics(note);
-
       var harmColor, funColor;
+      var complexNote = note.complexNote;
 
       if(this.useColor)
         funColor = freqToColor(complexNote[0], 440, this.funBrightness);
