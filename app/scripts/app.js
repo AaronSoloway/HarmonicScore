@@ -1,4 +1,4 @@
-define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
+define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBeat) {
   function App() {
 
     this.maxFrequency = 20000;
@@ -103,27 +103,78 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
     };
 
-    this.GetBeatFreq = function(f1, f2){
-      var diffFreq = Math.abs(f1-f2);
-      if((diffFreq > 2) && (diffFreq < 20))
-        return diffFreq;
-      return 0;
-    }
 
     this.CheckForNewBeats = function(note){
       for(var i = 0; i < this.currentNotes.length; ++i){
         var otherNote = this.currentNotes[i];
         for(var j = 0; j < otherNote.complexNote.length; ++j){
         for(var k = 0; k < note.complexNote.length; ++k){
-          var f1 = otherNote.complexNote[j].frequency;
-          var f2 = note.complexNote[k].frequency;
-          var beatFreq = this.GetBeatFreq(f1, f2);
-          if(beatFreq > 0){}
+          var f1 = otherNote.complexNote[j];
+          var f2 = note.complexNote[k];
+          var beat = GetBeat(f1.frequency, f2.frequency);
+          if(beat){
+            // let's add the beat frequency to both the current note's harmonic
+            // and the other notes.
+            f1.beats.push({
+              'other': f2,
+              'frequency': beat.frequency,
+              'prominence': beat.prominence,
+              'startTime': note.startTime
+            });
+            f2.beats.push({
+              'other': f1,
+              'frequency': beat.frequency,
+              'promincence': beat.prominence,
+              'startTime': note.startTime
+            });
+
+            this.currentBeats.push({
+              'f1': f1,
+              'f2': f2
+            });
+          }
         }}
       }
     };
 
     this.CheckForBeatsEnd = function(note){
+      for(var i = 0; i < note.complexNote.length; ++i){
+        var overtone = note.complexNote[i];
+
+        // end all of this notes overtones.
+        for(var j = 0; j < overtone.beats.length; ++j){
+          if(!overtone.beats[j].endTime)
+            overtone.beats[j].endTime = note.endTime;
+        }
+
+        // check if this overtone has any current notes, and if so,
+        // then end those.
+        for(j = 0; j < this.currentBeats; ++j){
+          var currBeat = this.currentBeats[j];
+          if(currBeat.f1 === note){
+            for(var k = 0; k < currBeat.f2.beats.length; ++k){
+              if(overtone === currBeat.f2.beats[k].other)
+                currBeat.f2.beats[k].endTime = note.endTime;
+            }
+          }
+          if(currBeat.f2 === note){
+            for(k = 0; k < currBeat.f1.beats.length; ++k){
+              if(overtone === currBeat.f1.beats[k].other)
+                currBeat.f1.beats[k].endTime = note.endTime;
+            }
+          }
+        }
+
+        // now remove any beat from the list of active beats
+        // that contains this as an overtone.
+        var oldBeats = this.currentBeats;
+        this.currentBeats= [];
+        for(j = 0; j < oldBeats.length; ++j){
+          if((oldBeats[j].f1 !== overtone) &&
+             (oldBeats[j].f2 !== overtone))
+            this.currentBeats.push(oldBeats[j]);
+        }
+      }
       
     };
 
@@ -173,10 +224,10 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     this.CalculateHarmonics = function(note){
       // takes a MIDI note number and outputs its frequency
       note.complexNote = [];
-      note.complexNote[0] = {'frequency':mtof(note.noteMIDINum).frequency};
+      note.complexNote[0] = {'frequency':mtof(note.noteMIDINum).frequency, 'beats':[]};
 
       for (var i = 1; i < this.numHarmonics; i++) {
-        note.complexNote[i] = {'frequency':(i+1)*note.complexNote[0].frequency};
+        note.complexNote[i] = {'frequency':(i+1)*note.complexNote[0].frequency, 'beats':[]};
       }
     };
 
@@ -189,33 +240,56 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
     // Draws a note on the paper 
     this.DrawNote = function(note){
-      var harmColor, funColor;
+      var color, height;
       var complexNote = note.complexNote;
+      var harmonicOpacity = 1;
 
-      if(this.useColor)
-        funColor = freqToColor(complexNote[0].frequency, 440, this.funBrightness);
-      else
-        funColor = "#f00";
-      
-      var that = this;
-
-
-      this.paper.rect(note.startTime, 
-                      this.freqToY(complexNote[0].frequency, this.funFreqHeight),
-                      note.endTime - note.startTime, 
-                      this.funFreqHeight).attr({fill: funColor, stroke:'none'});
-      var harmonicOpacity = 0.9;
-      for (var i = 1; i < complexNote.length; i++) {
-        if(this.useColor)
-          harmColor =  freqToColor(complexNote[i].frequency, 440, this.harmBrightness);
+      for (var i = 0; i < complexNote.length; i++) {
+        if(i===0)
+          height = this.funFreqHeight;
         else
-          harmColor= "#f55";
+          height = this.harmFreqHeight;
+
+        if(this.useColor)
+        {
+          if(i!==0)
+            color = freqToColor(complexNote[i].frequency, 440, this.harmBrightness);
+          else
+            color = freqToColor(complexNote[0].frequency, 440, this.funBrightness);
+        }
+        else
+        {
+          if(i!==0)
+            color= "#f55";
+          else
+            color= "#f00";
+        }
 
         this.paper.rect(note.startTime, 
-                        this.freqToY(complexNote[i].frequency, this.harmFreqHeight),
+                        this.freqToY(complexNote[i].frequency, height),
                         note.endTime - note.startTime, 
-                        this.harmFreqHeight).attr({fill: harmColor, stroke:'none', opacity: harmonicOpacity});
+                        height).attr({fill: color, stroke:'none', opacity: harmonicOpacity});
+
         harmonicOpacity = harmonicOpacity - 0.1;
+        for(var j = 0; j < complexNote[i].beats.length; ++j){
+          var a = function(){
+            var beat = complexNote[i].beats[j];
+            console.log(beat);
+            var opacity = beat.prominence;
+            var beatHeight = height * 3*beat.prominence;
+            var beat = this.paper.rect(beat.startTime, 
+                                       this.freqToY(complexNote[i].frequency, beatHeight),
+                                       beat.endTime - beat.startTime, 
+                                       beatHeight).attr({fill: color, stroke:'none', opacity: opacity});
+            var beatBlinkOn = function(){
+              beat.animate({opacity:opacity}, 1000/beat.frequency, beatBlinkOff);
+            }
+            var beatBlinkOff = function(){
+              beat.animate({opacity:0}, 1000/beat.frequency, beatBlinkOn);
+            }
+            beatBlinkOff();
+          }.apply(this);
+        }
       }
     };
 
