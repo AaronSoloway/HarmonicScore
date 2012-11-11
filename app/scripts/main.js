@@ -33,4 +33,18 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
       app.useColor = true;
       app.Render();
     });
+
+    $("#logScale").click(function() {
+      $("#logScale").parent().addClass('active');
+      $("#linScale").parent().removeClass('active');
+      app.logScale = true;
+      app.Render();
+    });
+
+    $("#linScale").click(function() {
+      $("#linScale").parent().addClass('active');
+      $("#logScale").parent().removeClass('active');
+      app.logScale = false;
+      app.Render();
+    });
 });

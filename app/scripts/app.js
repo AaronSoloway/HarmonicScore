@@ -2,6 +2,7 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
   function App() {
 
     this.maxFrequency = 20000;
+    this.maxLinFrequency = 5000;
     this.minFrequency = 20;
     this.numHarmonics = 10;
     this.pixelsPerBeat = 80;
@@ -11,7 +12,9 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     this.funBrightness = .9; // "V" value in HSV of fundamental
     this.harmBrightness = .8;
 
+    // display options
     this.useColor = true;
+    this.logScale = true;
 
     this.data = [];
 
@@ -148,6 +151,12 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       return complexNote;
     };
 
+    this.freqToY = function(f, h){
+      if(this.logScale)
+        return 1 - (h / 2) - (Math.log(f) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq;
+      else
+        return 1 - (h / 2) - f/this.maxLinFrequency;
+    };
 
     // Draws a note on the paper 
     this.DrawNote = function(note){
@@ -161,8 +170,11 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       else
         funColor = "#f00";
       
+      var that = this;
+
+
       this.paper.rect(note.startTime, 
-                      1 - (this.funFreqHeight / 2) - (Math.log(complexNote[0]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
+                      this.freqToY(complexNote[0], this.funFreqHeight),
                       note.endTime - note.startTime, 
                       this.funFreqHeight).attr({fill: funColor, stroke:'none'});
       var harmonicOpacity = 0.9;
@@ -173,7 +185,7 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
           harmColor= "#f55";
 
         this.paper.rect(note.startTime, 
-                        1 - (this.harmFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
+                        this.freqToY(complexNote[i], this.harmFreqHeight),
                         note.endTime - note.startTime, 
                         this.harmFreqHeight).attr({fill: harmColor, stroke:'none', opacity: harmonicOpacity});
         harmonicOpacity = harmonicOpacity - 0.1;
