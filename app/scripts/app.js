@@ -92,6 +92,7 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
     this.ClearEvents = function(){
       this.currentNotes = [];
+      this.currentBeats = [];
       this.data = [];
       this.notes = [];
       this.Clear();
@@ -102,7 +103,31 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
     };
 
-    this.HandleEvent =  function(event){
+    this.GetBeatFreq = function(f1, f2){
+      var diffFreq = Math.abs(f1-f2);
+      if((diffFreq > 2) && (diffFreq < 20))
+        return diffFreq;
+      return 0;
+    }
+
+    this.CheckForNewBeats = function(note){
+      for(var i = 0; i < this.currentNotes.length; ++i){
+        var otherNote = this.currentNotes[i];
+        for(var j = 0; j < otherNote.complexNote.length; ++j){
+        for(var k = 0; k < note.complexNote.length; ++k){
+          var f1 = otherNote.complexNote[j].frequency;
+          var f2 = note.complexNote[k].frequency;
+          var beatFreq = this.GetBeatFreq(f1, f2);
+          if(beatFreq > 0){}
+        }}
+      }
+    };
+
+    this.CheckForBeatsEnd = function(note){
+      
+    };
+
+    this.HandleEvent = function(event){
       
       if (event.type !== 'channel') {
           return;
@@ -112,20 +137,25 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       }
       switch(event.subtype){
         case 'noteOn':
-          this.currentNotes.push({
+          var note = {
             noteMIDINum: event.noteNumber,
             channel: event.channel,
             startTime: event.time
-          })
-        
+          };
+
+          // calculate harmonics
+          this.CalculateHarmonics(note);
+          this.CheckForNewBeats(note);
+          this.currentNotes.push(note);
           break;
+
         case 'noteOff':
           for(var i = 0; i < this.currentNotes.length; ++i)
           {
             var note = this.currentNotes[i];
             if (filter(note)) {
               note.endTime = event.time;
-              this.CalculateHarmonics(note);
+              this.CheckForBeatsEnd(note);
               this.notes.push(note);
             }
           }
@@ -142,11 +172,11 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
     // Calculate Harmonics
     this.CalculateHarmonics = function(note){
       // takes a MIDI note number and outputs its frequency
-      note.complexNote = new Array();
-      note.complexNote[0] = mtof(note.noteMIDINum).frequency;
+      note.complexNote = [];
+      note.complexNote[0] = {'frequency':mtof(note.noteMIDINum).frequency};
 
       for (var i = 1; i < this.numHarmonics; i++) {
-        note.complexNote[i] = (i+1)*note.complexNote[0];
+        note.complexNote[i] = {'frequency':(i+1)*note.complexNote[0].frequency};
       }
     };
 
@@ -163,7 +193,7 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
       var complexNote = note.complexNote;
 
       if(this.useColor)
-        funColor = freqToColor(complexNote[0], 440, this.funBrightness);
+        funColor = freqToColor(complexNote[0].frequency, 440, this.funBrightness);
       else
         funColor = "#f00";
       
@@ -171,18 +201,18 @@ define(['mtofTable', 'freqToColor'], function(mtof, freqToColor) {
 
 
       this.paper.rect(note.startTime, 
-                      this.freqToY(complexNote[0], this.funFreqHeight),
+                      this.freqToY(complexNote[0].frequency, this.funFreqHeight),
                       note.endTime - note.startTime, 
                       this.funFreqHeight).attr({fill: funColor, stroke:'none'});
       var harmonicOpacity = 0.9;
       for (var i = 1; i < complexNote.length; i++) {
         if(this.useColor)
-          harmColor =  freqToColor(complexNote[i], 440, this.harmBrightness);
+          harmColor =  freqToColor(complexNote[i].frequency, 440, this.harmBrightness);
         else
           harmColor= "#f55";
 
         this.paper.rect(note.startTime, 
-                        this.freqToY(complexNote[i], this.harmFreqHeight),
+                        this.freqToY(complexNote[i].frequency, this.harmFreqHeight),
                         note.endTime - note.startTime, 
                         this.harmFreqHeight).attr({fill: harmColor, stroke:'none', opacity: harmonicOpacity});
         harmonicOpacity = harmonicOpacity - 0.1;
