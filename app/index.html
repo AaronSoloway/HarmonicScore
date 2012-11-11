@@ -7,32 +7,60 @@
         <meta name="viewport" content="width=device-width">
         <script src="components/raphael/raphael.js"></script>
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
-
+        
+        <link href="styles/bootstrap.css" rel="stylesheet" media="screen">
         <link rel="stylesheet" href="styles/main.css">
         <script src="scripts/vendor/modernizr.min.js"></script>
     </head>
     <body>
-    <div class="container" style="margin-top:50px">
-        <div class="hero-unit">
-            <h1>HarmonicScore</h1>
-            <p>Harmony. Like you've never seen it.</p>
-            <input type="file" id="file-input"/>
-            <div id='footer'>
-                <div align="center">
-                    A project by <a href="http://twitter.com/AaronSoloway">@AaronSoloway</a> and <a href="http://twitter.com/rmcclellan">@RMcClellan</a>
-                </div>
-                <br>
-                <div align="justify">
-                    Inspired by <a href="http://www.sonicdesign.org/">Sonic Design</a> by <a href="http://www.sonicdesign.org/cogan.htm">Robert Cogan</a> and <a href="http://www.sonicdesign.org/escot.htm">Pozzi Escot</a> (recommended by Dave Flaherty from <a href="http://cuddlemagic.bandcamp.com/">Cuddle Magic</a>), <a href="http://www.musanim.com/">The Music Animation Machine</a> (found on <a href="http://www.edwardtufte.com/tufte/">Edward Tufte</a>'s <a href="http://www.edwardtufte.com/bboard/">forum</a>), <a href="http://www.amazon.com/Harmonograph-Visual-Guide-Mathematics-Wooden/dp/0802714099">Harmonograph A Visual Guide to the Mathematics of Music</a> by Anthony Ashton, and <a href="http://www.amazon.com/Harmonic-Experience-Harmony-Natural-Expression/dp/0892815604">Harmonic Experience: Tonal Harmony from Its Natural Origins to Its Modern Expression</a> by <a href="http://en.wikipedia.org/wiki/W._A._Mathieu">W. A. Mathieu</a> (discovered thanks to the, apparently deceased, blog of <a href="http://www.lloydwatts.com/">Lloyd Watts</a>, founder of <a href="http://www.audience.com/">Audience</a>).
-                </div>
-                <br>
-                <div align="center">
-                    First hacked for <a href="http://boston.musichackday.org">Music Hack Day Boston</a> Twenty-Hundred and Twelve
-                </div>
+      <input type="file" id="file-input" style="display:none"></input>
+      <div>
+        <div class="navbar navbar-fixed-top">
+          <div class="navbar-inner">
+            <div class="container">
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li class="brand">Harmoniscore</li>
+                  <li><p class="navbar-text">Harmony. Like you've never seen it.</p></li>
+                  <li><a style="cursor:pointer" onclick="$('input[id=file-input]').click();">Choose File</a></li>
+                </ul>
+              </div>
             </div>
+          </div>
         </div>
-        <div id="scoreContainer">
-          <div id="score" height="500px"></div>
+        <div id="scoreContainer" style="display:inline-block">
+          <div id="score"></div>
+        </div>
+        <div class="navbar navbar-fixed-bottom">
+          <div class="navbar-inner">
+            <div class="container">
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li><a style="cursor:pointer" href="#about" data-toggle="modal">About Harmoniscore</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal fade" id="about">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">&times;</a>
+          <h3>About Harmoniscore</h3>
+        </div>
+        <div class="modal-body">
+          <div class='modal-body'>
+            <p>
+              A project by <a href="http://twitter.com/AaronSoloway">@AaronSoloway</a> and <a href="http://twitter.com/rmcclellan">@RMcClellan</a>
+            </p>
+            <p>
+              Inspired by <a href="http://www.sonicdesign.org/">Sonic Design</a> by <a href="http://www.sonicdesign.org/cogan.htm">Robert Cogan</a> and <a href="http://www.sonicdesign.org/escot.htm">Pozzi Escot</a> (recommended by Dave Flaherty from <a href="http://cuddlemagic.bandcamp.com/">Cuddle Magic</a>), <a href="http://www.musanim.com/">The Music Animation Machine</a> (found on <a href="http://www.edwardtufte.com/tufte/">Edward Tufte</a>'s <a href="http://www.edwardtufte.com/bboard/">forum</a>), <a href="http://www.amazon.com/Harmonograph-Visual-Guide-Mathematics-Wooden/dp/0802714099">Harmonograph A Visual Guide to the Mathematics of Music</a> by Anthony Ashton, and <a href="http://www.amazon.com/Harmonic-Experience-Harmony-Natural-Expression/dp/0892815604">Harmonic Experience: Tonal Harmony from Its Natural Origins to Its Modern Expression</a> by <a href="http://en.wikipedia.org/wiki/W._A._Mathieu">W. A. Mathieu</a> (discovered thanks to the, apparently deceased, blog of <a href="http://www.lloydwatts.com/">Lloyd Watts</a>, founder of <a href="http://www.audience.com/">Audience</a>).
+            </p>
+            <p>
+              First hacked for <a href="http://boston.musichackday.org">Music Hack Day Boston</a> Twenty-Hundred and Twelve
+            </p>
+          </div>
         </div>
       </div>
     </body>
@@ -47,8 +75,6 @@
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="scripts/vendor/jquery.min.js"><\/script>')</script>
         
-        
-
         <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <script>
             var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
@@ -60,5 +86,4 @@
     <!-- build:js scripts/amd-app.js -->
     <script data-main="scripts/main" src="scripts/vendor/require.js"></script>
     <!-- endbuild -->
-</body>
 </html>

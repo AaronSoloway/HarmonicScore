@@ -3,6 +3,8 @@ define(['mtofTable'], function(mtof) {
 
     this.numHarmonics = 10;
     this.pixelsPerBeat = 80;
+    this.noteHeight = .005;
+    this.harmonicHeight = .005;
 
     this.OnLoad = function(){
       //define based on window size
@@ -130,9 +132,9 @@ define(['mtofTable'], function(mtof) {
    
 
     this.DrawNote = function(note){
-      var complexNote = new Array();
-      complexNote = this.CalculateHarmonics(note);
-      this.paper.rect(note.startTime, (this.height - note.noteMIDINum) - .5, note.endTime - note.startTime, 1).attr({fill: "#f00", stroke:'none'});
+//      var complexNote = new Array();
+//      complexNote = this.CalculateHarmonics(note);
+      this.paper.rect(note.startTime, (1 - note.noteMIDINum/128) - this.noteHeight/2, note.endTime - note.startTime, this.noteHeight).attr({fill: "#f00", stroke:'none'});
       
       //this.paper.rect(note.startTime, (this.height - note.noteMIDINum) - .5, note.endTime - note.startTime, 1).attr({fill: "#f00", stroke:'none'});
          

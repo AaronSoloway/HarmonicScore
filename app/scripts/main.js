@@ -7,7 +7,7 @@ require.config({
   }
 });
  
-require(['midifile', 'app', 'replayer'], function(midifile, app, Replayer) {
+require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Replayer) {
 
     app.OnLoad();
 
