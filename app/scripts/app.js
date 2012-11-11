@@ -1,4 +1,4 @@
-define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], function(equalTemperament, limit5, freqToColor, GetBeat) {
+define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats', 'aria'], function(equalTemperament, limit5, freqToColor, GetBeat, aria) {
   function App() {
 
     this.intonation = equalTemperament;
@@ -21,7 +21,7 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
     this.animateBeats = true;
 
     // holds unprocessed notes
-    this.data = [];
+    this.data = aria;
     // notes holds processed note data
     this.notes = [];
     // beats holds processed beat data
@@ -42,7 +42,7 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
       this.SetViewBox(this.maxTime, this.height);
       this.paper.canvas.setAttribute('height', '100%');
       this.ResizeCanvas();
-      this.ClearEvents();
+      this.ProcessData();
     };
 
     this.Render = function(){
@@ -59,6 +59,7 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats'], functio
 
     this.ProcessData = function() {
       data = this.data;
+      console.log(JSON.stringify(data));
 
       // clear the events
       this.ClearEvents();
