@@ -15,14 +15,15 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
     // display options
     this.useColor = true;
     this.logScale = true;
+    this.animateBeats = true;
 
-    // data holds unprocessed note data
-    this.data = [];
     // notes holds processed note data
     this.notes = [];
-    // holds the maximum time scale
+    // beats holds processed beat data
+    this.beats = [];
+    // holds the time where the last note ends.
     this.maxTime = 100;
-    // make something up.
+    // the height is always scaled to "1"
     this.height = 1;
 
     // pre-computed logs for efficiency?
@@ -54,9 +55,6 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
     this.MidiChanged = function(data){
       // clear the events
       this.ClearEvents();
-
-      // set the processed data
-      this.data = data;
 
       // Run through whole file converting from delta times to
       // absolute time.
@@ -93,8 +91,8 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
     this.ClearEvents = function(){
       this.currentNotes = [];
       this.currentBeats = [];
-      this.data = [];
       this.notes = [];
+      this.beats = [];
       this.Clear();
     }
 
@@ -104,6 +102,8 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
     };
 
 
+    // This checks to see if the passed-in note beats against
+    // any currently-sounding notes
     this.CheckForNewBeats = function(note){
       for(var i = 0; i < this.currentNotes.length; ++i){
         var otherNote = this.currentNotes[i];
@@ -116,15 +116,17 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
             // let's add the beat frequency to both the current note's harmonic
             // and the other notes.
             f1.beats.push({
+              'baseFreq': f1,
               'other': f2,
               'frequency': beat.frequency,
               'prominence': beat.prominence,
               'startTime': note.startTime
             });
             f2.beats.push({
+              'baseFreq': f2,
               'other': f1,
               'frequency': beat.frequency,
-              'promincence': beat.prominence,
+              'prominence': beat.prominence,
               'startTime': note.startTime
             });
 
@@ -137,6 +139,8 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
       }
     };
 
+    // Checks if the current note ends any currently
+    // ringing beats
     this.CheckForBeatsEnd = function(note){
       for(var i = 0; i < note.complexNote.length; ++i){
         var overtone = note.complexNote[i];
@@ -166,16 +170,18 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
         }
 
         // now remove any beat from the list of active beats
-        // that contains this as an overtone.
+        // that contains this as an overtone,
+        // and add them to our global list of beats.
         var oldBeats = this.currentBeats;
         this.currentBeats= [];
         for(j = 0; j < oldBeats.length; ++j){
           if((oldBeats[j].f1 !== overtone) &&
              (oldBeats[j].f2 !== overtone))
             this.currentBeats.push(oldBeats[j]);
+          else
+            this.beats.push(oldBeats[j]);
         }
       }
-      
     };
 
     this.HandleEvent = function(event){
@@ -196,7 +202,10 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
 
           // calculate harmonics
           this.CalculateHarmonics(note);
+
+          // Check if this note causes any new beats
           this.CheckForNewBeats(note);
+
           this.currentNotes.push(note);
           break;
 
@@ -206,10 +215,15 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
             var note = this.currentNotes[i];
             if (filter(note)) {
               note.endTime = event.time;
+
+              // check if this note ends any beats
               this.CheckForBeatsEnd(note);
+
+              // add this to our list of processed notes
               this.notes.push(note);
             }
           }
+
           var oldNotes = this.currentNotes;
           this.currentNotes = [];
           for(var j = 0; j < oldNotes.length; ++j) {
@@ -244,12 +258,16 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
       var complexNote = note.complexNote;
       var harmonicOpacity = 1;
 
+      // go through each harmonic
       for (var i = 0; i < complexNote.length; i++) {
+        
+        // calculate visible height of note
         if(i===0)
           height = this.funFreqHeight;
         else
           height = this.harmFreqHeight;
 
+        // calculate color
         if(this.useColor)
         {
           if(i!==0)
@@ -265,31 +283,41 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
             color= "#f00";
         }
 
+        // create an SVG rect representing this note
         this.paper.rect(note.startTime, 
                         this.freqToY(complexNote[i].frequency, height),
                         note.endTime - note.startTime, 
                         height).attr({fill: color, stroke:'none', opacity: harmonicOpacity});
 
-        harmonicOpacity = harmonicOpacity - 0.1;
         for(var j = 0; j < complexNote[i].beats.length; ++j){
+          // wrap in a closure so we can keep scope
           var a = function(){
-            var beat = complexNote[i].beats[j];
-            console.log(beat);
-            var opacity = beat.prominence;
-            var beatHeight = height * 3*beat.prominence;
-            var beat = this.paper.rect(beat.startTime, 
+            var beatInfo = complexNote[i].beats[j];
+            var minOpacity = harmonicOpacity - (beatInfo.prominence / 2 * harmonicOpacity);
+            var maxOpacity = harmonicOpacity + (beatInfo.prominence / 2 * harmonicOpacity);
+
+            var beatHeight = height * 3 * beatInfo.prominence;
+            var beat = this.paper.rect(beatInfo.startTime, 
                                        this.freqToY(complexNote[i].frequency, beatHeight),
-                                       beat.endTime - beat.startTime, 
-                                       beatHeight).attr({fill: color, stroke:'none', opacity: opacity});
-            var beatBlinkOn = function(){
-              beat.animate({opacity:opacity}, 1000/beat.frequency, beatBlinkOff);
+                                       beatInfo.endTime - beatInfo.startTime, 
+                                       beatHeight)
+            if(this.animateBeats){
+              beat.attr({fill: color, stroke:'none', opacity: maxOpacity});
+              var beatBlinkOn = function(){
+                beat.animate({'opacity':maxOpacity}, 1e4/beatInfo.frequency, beatBlinkOff);
+              }
+              var beatBlinkOff = function(){
+                beat.animate({'opacity':minOpacity}, 1e4/beatInfo.frequency, beatBlinkOn);
+              }
+              beatBlinkOff();
+            } else {
+              beat.attr({fill: '#fff', stroke:'none', 'opacity':beatInfo.prominence/10});
             }
-            var beatBlinkOff = function(){
-              beat.animate({opacity:0}, 1000/beat.frequency, beatBlinkOn);
-            }
-            beatBlinkOff();
           }.apply(this);
         }
+        
+        // each harmonic should have slightly less opacity
+        harmonicOpacity = harmonicOpacity - 0.1;
       }
     };
 

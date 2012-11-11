@@ -47,4 +47,18 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
       app.logScale = false;
       app.Render();
     });
+
+    $("#animateBeats").click(function() {
+      $("#animateBeats").parent().addClass('active');
+      $("#highlightBeats").parent().removeClass('active');
+      app.animateBeats = true;
+      app.Render();
+    });
+
+    $("#highlightBeats").click(function() {
+      $("#highlightBeats").parent().addClass('active');
+      $("#animateBeats").parent().removeClass('active');
+      app.animateBeats = false;
+      app.Render();
+    });
 });
