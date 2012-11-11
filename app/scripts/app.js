@@ -1,5 +1,7 @@
-define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBeat) {
+define(['equalTemperament', 'freqToColor', 'beats'], function(equalTemperament, freqToColor, GetBeat) {
   function App() {
+
+    this.intonation = equalTemperament;
 
     this.maxFrequency = 20000;
     this.maxLinFrequency = 5000;
@@ -238,7 +240,7 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
     this.CalculateHarmonics = function(note){
       // takes a MIDI note number and outputs its frequency
       note.complexNote = [];
-      note.complexNote[0] = {'frequency':mtof(note.noteMIDINum).frequency, 'beats':[]};
+      note.complexNote[0] = {'frequency':this.intonation(note.noteMIDINum).frequency, 'beats':[]};
 
       for (var i = 1; i < this.numHarmonics; i++) {
         note.complexNote[i] = {'frequency':(i+1)*note.complexNote[0].frequency, 'beats':[]};
@@ -296,7 +298,7 @@ define(['mtofTable', 'freqToColor', 'beats'], function(mtof, freqToColor, GetBea
             var minOpacity = harmonicOpacity - (beatInfo.prominence / 2 * harmonicOpacity);
             var maxOpacity = harmonicOpacity + (beatInfo.prominence / 2 * harmonicOpacity);
 
-            var beatHeight = height * 3 * beatInfo.prominence;
+            var beatHeight = this.harmFreqHeight * 3 * beatInfo.prominence;
             var beat = this.paper.rect(beatInfo.startTime, 
                                        this.freqToY(complexNote[i].frequency, beatHeight),
                                        beatInfo.endTime - beatInfo.startTime, 
