@@ -5,7 +5,7 @@ define(['mtofTable'], function(mtof) {
     this.minFrequency = 20;
     this.numHarmonics = 10;
     this.pixelsPerBeat = 80;
-    this.funFreqHeight = 100/this.maxFrequency; //this puts it in terms of frequency height
+    this.funFreqHeight = 130/this.maxFrequency; //this puts it in terms of frequency height
     this.harmFreqHeight = 50/this.maxFrequency; //this puts it in terms of frequency height
     this.logMaxFreq = Math.log(this.maxFrequency);
     this.logMinFreq = Math.log(this.minFrequency);
@@ -136,14 +136,18 @@ define(['mtofTable'], function(mtof) {
       var complexNote = new Array();
       complexNote = this.CalculateHarmonics(note);
 
-      //console.log(this.log2(this.maxFrequency / (complexNote[i])));
+      this.paper.rect(note.startTime, 
+                      1 - (this.funFreqHeight / 2) - (Math.log(complexNote[0]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
+                      note.endTime - note.startTime, 
+                      this.funFreqHeight).attr({fill: "#f00", stroke:'none'});
+      var harmonicOpacity = 0.9;
+      for (var i = 1; i < complexNote.length; i++) {
 
-      // TODO: adjust height to compensate for drawing offset
-      for (var i = 0; i < complexNote.length; i++) {
         this.paper.rect(note.startTime, 
-                        1 - (this.funFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
+                        1 - (this.harmFreqHeight / 2) - (Math.log(complexNote[i]) - this.logMinFreq) / this.logMaxFreqMinuslogMinFreq,                         
                         note.endTime - note.startTime, 
-                        this.funFreqHeight).attr({fill: "#f00", stroke:'none'});
+                        this.harmFreqHeight).attr({fill: "#f55", stroke:'none', opacity: harmonicOpacity});
+        harmonicOpacity = harmonicOpacity - 0.1;
       }
     };
 
