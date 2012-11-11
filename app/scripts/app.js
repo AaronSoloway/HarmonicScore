@@ -59,7 +59,6 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats', 'aria'],
 
     this.ProcessData = function() {
       data = this.data;
-      console.log(JSON.stringify(data));
 
       // clear the events
       this.ClearEvents();
