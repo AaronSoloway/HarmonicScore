@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>HarmonicScore</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <script src="components/raphael/raphael.js"></script>
+        <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+        
+        <link href="styles/cccc2db8.bootstrap.css" rel="stylesheet" media="screen">
+        <link rel="stylesheet" href="styles/69aafbb7.main.css">
+        <script src="scripts/vendor/cf69c6f2.modernizr.min.js"></script>
+    </head>
+    <body>
+      <input type="file" id="file-input" style="display:none"></input>
+      <div>
+        <div class="navbar navbar-fixed-top">
+          <div class="navbar-inner">
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li class="brand">HarmonicScore</li>
+                  <li><p class="navbar-text">Harmony. Like you've never seen it.</p></li>
+                  <li><a style="cursor:pointer" onclick="$('input[id=file-input]').click();">Choose File</a></li>
+                  <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">Display Mode</a>
+                    <ul class="dropdown-menu">
+                      <li class="active"><a id="colorSelect" href="#">Color</a></li>
+                      <li><a href="#" id="bwSelect">Black and White</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+          </div>
+        </div>
+        <div id="scoreContainer" style="display:inline-block">
+          <div id="score"></div>
+        </div>
+        <div class="navbar navbar-fixed-bottom">
+          <div class="navbar-inner">
+              <div class="nav-collapse collapse">
+                <ul class="nav">
+                  <li><a style="cursor:pointer" href="#about" data-toggle="modal">About HarmonicScore</a></li>
+                </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal fade" id="about" align="center">
+        <div class="modal-header">
+          <a class="close" data-dismiss="modal">&times;</a>
+          <h3>About HarmonicScore</h3>
+        </div>
+        <div class="modal-body">
+          <div class='modal-body'>
+            <br>
+            <p style="text-align: center;">
+              A project by <a href="http://twitter.com/AaronSoloway">@AaronSoloway</a> and <a href="http://twitter.com/rmcclellan">@RMcClellan</a>
+            </p>
+            <br>
+            <br>
+            <p style="text-align: justify">
+              Inspired by <a href="http://www.sonicdesign.org/">Sonic Design</a> by <a href="http://www.sonicdesign.org/cogan.htm">Robert Cogan</a> and <a href="http://www.sonicdesign.org/escot.htm">Pozzi Escot</a> (recommended by Dave Flaherty from <a href="http://cuddlemagic.bandcamp.com/">Cuddle Magic</a>), <a href="http://www.musanim.com/">The Music Animation Machine</a> (found on <a href="http://www.edwardtufte.com/tufte/">Edward Tufte</a>'s <a href="http://www.edwardtufte.com/bboard/">forum</a>), <a href="http://www.amazon.com/Harmonograph-Visual-Guide-Mathematics-Wooden/dp/0802714099">Harmonograph A Visual Guide to the Mathematics of Music</a> by Anthony Ashton, and <a href="http://www.amazon.com/Harmonic-Experience-Harmony-Natural-Expression/dp/0892815604">Harmonic Experience: Tonal Harmony from Its Natural Origins to Its Modern Expression</a> by <a href="http://en.wikipedia.org/wiki/W._A._Mathieu">W. A. Mathieu</a> (discovered thanks to the, apparently deceased, blog of <a href="http://www.lloydwatts.com/">Lloyd Watts</a>, founder of <a href="http://www.audience.com/">Audience</a>).
+            </p>
+            <br>
+            <br>
+            <p style="text-align: center;">
+              First hacked for <a href="http://boston.musichackday.org">Music Hack Day Boston</a> Twenty-Hundred and Twelve
+            </p>
+            <br>
+          </div>
+        </div>
+      </div>
+    </body>
+
+
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="scripts/vendor/8bc61845.jquery.min.js"><\/script>')</script>
+        
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+        <script>
+            var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script>
+    
+    <script src="scripts/c7fe8e23.amd-app.js"></script>
+</html>
