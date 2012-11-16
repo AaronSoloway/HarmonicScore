@@ -19,42 +19,24 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
       }
       reader.readAsBinaryString(this.files[0]);
     });
+
+    // meta-function to create handlers for checkbox pairs
+    var MakeCheckBoxPair = function(trueElem, falseElem, appMethod){
+      $(falseElem).click(function() {
+        $(falseElem).parent().addClass('active');
+        $(trueElem).parent().removeClass('active');
+        app[appMethod](false);
+      });
+      $(trueElem).click(function() {
+        $(trueElem).parent().addClass('active');
+        $(falseElem).parent().removeClass('active');
+        app[appMethod](true);
+      });
+    }
     
-    $("#bwSelect").click(function() {
-      $("#bwSelect").parent().addClass('active');
-      $("#colorSelect").parent().removeClass('active');
-      app.SetUseColor(false);
-    });
-
-    $("#colorSelect").click(function() {
-      $("#colorSelect").parent().addClass('active');
-      $("#bwSelect").parent().removeClass('active');
-      app.SetUseColor(true);
-    });
-
-    $("#logScale").click(function() {
-      $("#logScale").parent().addClass('active');
-      $("#linScale").parent().removeClass('active');
-      app.SetLogScale(true);
-    });
-
-    $("#linScale").click(function() {
-      $("#linScale").parent().addClass('active');
-      $("#logScale").parent().removeClass('active');
-      app.SetLogScale(false);
-    });
-
-    $("#animateBeats").click(function() {
-      $("#animateBeats").parent().addClass('active');
-      $("#highlightBeats").parent().removeClass('active');
-      app.SetAnimateBeats(true);
-    });
-
-    $("#highlightBeats").click(function() {
-      $("#highlightBeats").parent().addClass('active');
-      $("#animateBeats").parent().removeClass('active');
-      app.SetAnimateBeats(false);
-    });
+    MakeCheckBoxPair('#colorSelect', '#bwSelect', 'SetUseColor');
+    MakeCheckBoxPair('#logScale', '#linScale', 'SetLogScale');
+    MakeCheckBoxPair('#animateBeats', '#highlightBeats', 'SetAnimateBeats');
 
     $("#equalTemperament").click(function() {
       $("#equalTemperament").parent().addClass('active');
