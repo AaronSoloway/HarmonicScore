@@ -118,8 +118,6 @@ define(['beats'], function(GetBeat){
     return currentBeats;
   };
 
-
-
   /////////////////////////
   // main processing function
   /////////////////////////
@@ -213,9 +211,9 @@ define(['beats'], function(GetBeat){
     };
     
     // Run through each event and "handle it"
-    for(i = 0; i < data.length; ++i){
+    for(i = 0; i < data.length; ++i)
       handleEvent(data[i][0].event);
-    }
+
     
     // okay, we're done!
     return processedNotes;

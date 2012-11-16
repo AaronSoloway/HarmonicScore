@@ -23,50 +23,43 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
     $("#bwSelect").click(function() {
       $("#bwSelect").parent().addClass('active');
       $("#colorSelect").parent().removeClass('active');
-      app.useColor = false;
-      app.Render();
+      app.SetUseColor(false);
     });
 
     $("#colorSelect").click(function() {
       $("#colorSelect").parent().addClass('active');
       $("#bwSelect").parent().removeClass('active');
-      app.useColor = true;
-      app.Render();
+      app.SetUseColor(true);
     });
 
     $("#logScale").click(function() {
       $("#logScale").parent().addClass('active');
       $("#linScale").parent().removeClass('active');
-      app.logScale = true;
-      app.Render();
+      app.SetLogScale(true);
     });
 
     $("#linScale").click(function() {
       $("#linScale").parent().addClass('active');
       $("#logScale").parent().removeClass('active');
-      app.logScale = false;
-      app.Render();
+      app.SetLogScale(false);
     });
 
     $("#animateBeats").click(function() {
       $("#animateBeats").parent().addClass('active');
       $("#highlightBeats").parent().removeClass('active');
-      app.animateBeats = true;
-      app.Render();
+      app.SetAnimateBeats(true);
     });
 
     $("#highlightBeats").click(function() {
       $("#highlightBeats").parent().addClass('active');
       $("#animateBeats").parent().removeClass('active');
-      app.animateBeats = false;
-      app.Render();
+      app.SetAnimateBeats(false);
     });
 
     $("#equalTemperament").click(function() {
       $("#equalTemperament").parent().addClass('active');
       $(".limit5").parent().removeClass('active');
       app.SetIntonation(0, "equal");
-      app.ProcessData();
     });
   
     $(".limit5").click(function(a) {
@@ -74,6 +67,5 @@ require(['midifile', 'app', 'replayer', 'bootstrap'], function(midifile, app, Re
       $(".limit5").parent().removeClass('active');
       $(a.target).parent().addClass('active');
       app.SetIntonation(parseInt(a.target.getAttribute('id')), "limit5");
-      app.ProcessData();
     });
 });
