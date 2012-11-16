@@ -1,99 +1,106 @@
-define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats', 'aria'], function(equalTemperament, limit5, freqToColor, GetBeat, aria) {
+
+// dependencies
+define(['equalTemperament', 'limit5intonation', 'freqToColor', 'processor', 'aria'], function(equalTemperament, limit5, freqToColor, ProcessNotes, aria) {
+
   function App() {
+    ///////////////////////
+    // Constants
+    ///////////////////////
 
-    this.intonation = equalTemperament;
-    this.key = 0;
+    this.maxLogFrequency = 20000;   // max frequency in log mode
+    this.maxLinFrequency = 5000;    // max frequency in linear mode
+    this.minLogFrequency = 20;      // minimum frequency in log mode
+    this.pixelsPerBeat = 80;        // the number of pixels per MIDI beat on the x-axis
+    this.funFreqHeight = 130/this.maxLogFrequency; // height of fundamentals
+    this.harmFreqHeight = 50/this.maxLogFrequency; // height of harmonics
+    this.funBrightness = .9;       // brightness of fundamentals
+    this.harmBrightness = .8;      // brightness of harmonics
+    this.height = 1;               // the logical height
 
-    this.maxFrequency = 20000;
-    this.maxLinFrequency = 5000;
-    this.minFrequency = 20;
-    this.numHarmonics = 10;
-    this.pixelsPerBeat = 80;
-    this.funFreqHeight = 130/this.maxFrequency; //this puts it in terms of frequency height
-    this.harmFreqHeight = 50/this.maxFrequency; //this puts it in terms of frequency height
-
-    this.funBrightness = .9; // "V" value in HSV of fundamental
-    this.harmBrightness = .8;
-
-    // display options
-    this.useColor = true;
-    this.logScale = true;
-    this.animateBeats = true;
-
-    // holds unprocessed notes
-    this.data = aria;
-    // notes holds processed note data
-    this.notes = [];
-    // beats holds processed beat data
-    this.beats = [];
-    // holds the time where the last note ends.
-    this.maxTime = 100;
-    // the height is always scaled to "1"
-    this.height = 1;
-
-    // pre-computed logs for efficiency?
-    this.logMaxFreq = Math.log(this.maxFrequency);
-    this.logMinFreq = Math.log(this.minFrequency);
+    // pre-computed logs for efficiency? - I'm not sure these are needed
+    this.logMaxFreq = Math.log(this.maxLogFrequency);
+    this.logMinFreq = Math.log(this.minLogFrequency);
     this.logMaxFreqMinuslogMinFreq = this.logMaxFreq - this.logMinFreq;
 
+    ///////////////////////
+    // Display variables
+    ///////////////////////
+
+    // this.intonation is a function that goes from midi note to frequency.
+    // by default we use equal temperament, but this can be changed from the
+    // SetIntonation function (see below).
+    this.intonation = equalTemperament;
+
+    this.useColor = true;  // color or black and white?
+    this.logScale = true;  // log scale for frequency? (as opposed to linear)
+    this.animateBeats = true; // animate the detected beats?
+
+    // holds parsed, unprocessed MIDI data
+    this.data = aria;  // by default, use the pre-parsed Bach Aria from aria.js
+    // this holds processed note data.  processing involves converting delta-time into absolute times, calculating all harmonics, and calculating all beats.
+    this.processedNotes = [];
+
+    // holds the time where the last note ends.  This is the maximum dimension of the logical x axis
+    this.maxTime = 100; // just give it some stupid value by default - this will be reset when we process our default data.
+
+    // OnLoad gets called when the app loads.  
+    // it just processes the loaded MIDI data.
     this.OnLoad = function(){
       // create Raphael paper on which to draw
       this.paper = new Raphael('score');
       this.SetViewBox(this.maxTime, this.height);
       this.paper.canvas.setAttribute('height', '100%');
-      this.ResizeCanvas();
       this.ProcessData();
     };
 
+    // Render draws the processed MIDI data to the screen.
     this.Render = function(){
-      var data = this.notes;
-
-      // set the maximum time to the last note's time.
       this.Clear();
 
       // draw each note
-      for(var i = 0; i < data.length; ++i){
-        this.DrawNote(data[i]);
+      for(var i = 0; i < this.processedNotes.length; ++i){
+        this.DrawNote(this.processedNotes[i]);
       }
     }
 
+    // This converts unprocessed MIDI data into our processed midi data.
+    // it will also render the processed notes.
     this.ProcessData = function() {
-      data = this.data;
-
       // clear the events
       this.ClearEvents();
 
-      // Run through whole file converting from delta times to
-      // absolute time.
-      var time = 0;
-      for(var i = 0; i < data.length; ++i){
-        time += data[i][0].beatsToEvent;
-        data[i][0].event.time = time;
-      }
+      // process the data
+      this.processedNotes = ProcessNotes(this.data, this.intonation);
 
-      // process Notes
-      // Run through each event and "handle it"
-      for(i = 0; i < data.length; ++i){
-        this.HandleEvent(data[i][0].event);
-      }
+      // the new "max time" is the end of the last note
+      if(this.processedNotes.length)
+        this.maxTime = this.processedNotes[this.processedNotes.length - 1].endTime;
+      else
+        this.maxTime = 1;
 
-      this.maxTime = this.notes[this.notes.length - 1].endTime;
+      // set the logical bounds of the paper to the height and maxTime
       this.SetViewBox(this.maxTime, this.height);
+      
+      // set the physical bounds based on maxTime
       this.ResizeCanvas();
 
+      // draw all the notes
       this.Render();
     }
 
+    // this gets called when the MIDI data changes
     this.MidiChanged = function(data){
       this.data = data;
 
       this.ProcessData();
     };
 
+    // sets the physical bounds of the canvas to this * maxTime
     this.ResizeCanvas = function(){
       this.paper.canvas.setAttribute('width', this.maxTime * this.pixelsPerBeat);
     };
     
+    // sets the logical bounds of the canvas
     this.SetViewBox = function(w, h){
       this.paper.setViewBox(0, 0, w, h, true);
       this.paper.canvas.setAttribute('preserveAspectRatio', 'none');
@@ -101,17 +108,15 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats', 'aria'],
       this.canvasH = h;
     };
 
+    // clears all the cached events
     this.ClearEvents = function(){
       this.currentNotes = [];
       this.currentBeats = [];
-      this.notes = [];
-      this.beats = [];
+      this.processedNotes = [];
       this.Clear();
     }
 
     this.SetIntonation = function(key, intone){
-      console.log(key, intone);
-      this.key = key;
       if(intone === "equal")
         this.intonation = equalTemperament;
       else
@@ -121,143 +126,6 @@ define(['equalTemperament', 'limit5intonation', 'freqToColor', 'beats', 'aria'],
     this.Clear = function(){
        this.paper.clear();
       this.placemat = this.paper.rect(0,0,this.canvasW,this.canvasH).attr({"fill" : "#333333", 'stroke':'none' });
-    };
-
-
-    // This checks to see if the passed-in note beats against
-    // any currently-sounding notes
-    this.CheckForNewBeats = function(note){
-      for(var i = 0; i < this.currentNotes.length; ++i){
-        var otherNote = this.currentNotes[i];
-        for(var j = 0; j < otherNote.complexNote.length; ++j){
-        for(var k = 0; k < note.complexNote.length; ++k){
-          var f1 = otherNote.complexNote[j];
-          var f2 = note.complexNote[k];
-          var beat = GetBeat(f1.frequency, f2.frequency);
-          if(beat){
-            // let's add the beat frequency to both the current note's harmonic
-            // and the other notes.
-            f2.beats.push({
-              'baseFreq': f2,
-              'other': f1,
-              'frequency': beat.frequency,
-              'prominence': beat.prominence,
-              'startTime': note.startTime
-            });
-
-            this.currentBeats.push({
-              'f1': f1,
-              'f2': f2
-            });
-          }
-        }}
-      }
-    };
-
-    // Checks if the current note ends any currently
-    // ringing beats
-    this.CheckForBeatsEnd = function(note){
-      for(var i = 0; i < note.complexNote.length; ++i){
-        var overtone = note.complexNote[i];
-
-        // end all of this notes overtones.
-        for(var j = 0; j < overtone.beats.length; ++j){
-          if(!overtone.beats[j].endTime)
-            overtone.beats[j].endTime = note.endTime;
-        }
-
-        // check if this overtone has any current notes, and if so,
-        // then end those.
-        for(j = 0; j < this.currentBeats; ++j){
-          var currBeat = this.currentBeats[j];
-          if(currBeat.f1 === note){
-            for(var k = 0; k < currBeat.f2.beats.length; ++k){
-              if(overtone === currBeat.f2.beats[k].other)
-                currBeat.f2.beats[k].endTime = note.endTime;
-            }
-          }
-          if(currBeat.f2 === note){
-            for(k = 0; k < currBeat.f1.beats.length; ++k){
-              if(overtone === currBeat.f1.beats[k].other)
-                currBeat.f1.beats[k].endTime = note.endTime;
-            }
-          }
-        }
-
-        // now remove any beat from the list of active beats
-        // that contains this as an overtone,
-        // and add them to our global list of beats.
-        var oldBeats = this.currentBeats;
-        this.currentBeats = [];
-        for(j = 0; j < oldBeats.length; ++j){
-          if((oldBeats[j].f1 !== overtone) &&
-             (oldBeats[j].f2 !== overtone))
-            this.currentBeats.push(oldBeats[j]);
-          else
-            this.beats.push(oldBeats[j]);
-        }
-      }
-    };
-
-    this.HandleEvent = function(event){
-      
-      if (event.type !== 'channel') {
-          return;
-      }
-      var filter = function(note){
-        return (note.channel === event.channel) && (note.noteMIDINum === event.noteNumber);
-      }
-      switch(event.subtype){
-        case 'noteOn':
-          var note = {
-            noteMIDINum: event.noteNumber,
-            channel: event.channel,
-            startTime: event.time
-          };
-
-          // calculate harmonics
-          this.CalculateHarmonics(note);
-
-          // Check if this note causes any new beats
-          this.CheckForNewBeats(note);
-
-          this.currentNotes.push(note);
-          break;
-
-        case 'noteOff':
-          for(var i = 0; i < this.currentNotes.length; ++i)
-          {
-            var note = this.currentNotes[i];
-            if (filter(note)) {
-              note.endTime = event.time;
-
-              // check if this note ends any beats
-              this.CheckForBeatsEnd(note);
-
-              // add this to our list of processed notes
-              this.notes.push(note);
-            }
-          }
-
-          var oldNotes = this.currentNotes;
-          this.currentNotes = [];
-          for(var j = 0; j < oldNotes.length; ++j) {
-            if(!filter(oldNotes[j])){
-                this.currentNotes.push(oldNotes[j]);
-            }
-          }
-      }
-    };
-
-    // Calculate Harmonics
-    this.CalculateHarmonics = function(note){
-      // takes a MIDI note number and outputs its frequency
-      note.complexNote = [];
-      note.complexNote[0] = {'frequency':this.intonation(note.noteMIDINum).frequency, 'beats':[]};
-
-      for (var i = 1; i < this.numHarmonics; i++) {
-        note.complexNote[i] = {'frequency':(i+1)*note.complexNote[0].frequency, 'beats':[]};
-      }
     };
 
     this.freqToY = function(f, h){
