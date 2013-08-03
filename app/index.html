@@ -68,7 +68,7 @@
           <div class="navbar-inner">
               <div class="nav-collapse collapse">
                 <ul class="nav">
-                  <li><a style="cursor:pointer" href="#help" data-toggle="modal">Help</a></li>
+                  <li><a style="cursor:pointer" href="#help" data-toggle="modal">How Do I Use This?</a></li>
                   <li><a style="cursor:pointer" href="#about" data-toggle="modal">About HarmonicScore</a></li>
                 </ul>
             </div>
@@ -79,19 +79,39 @@
       <div class="modal fade" id="help" align="center">
         <div class="modal-header">
           <a class="close" data-dismiss="modal">&times;</a>
-          <h3>HarmonicScore Help</h3>
+          <h3>How Do I Use This?</h3>
         </div>
         <div class="modal-body">
-          <div class='modal-body'>
-            <br>
-            <p style="text-align: center;">
-              HarmonicScore is a way of visualizing the harmonic interactions implicit in musical scores.  The X-axis represents time, and the Y-axis represents frequency.  Stronger, wider lines represent notes and thinner, lighter lines represent their harmonics.  If two harmonics are close enough together in frequency to cause audible beating effects, their interaction is highlighted by a subtle blinking.  The more noticable the beating interaction, the more intense the highlight.
-            </p>
+          <p style="text-align: justify;">
+            <b>What is going on here?  How do I use it?</b><br>
+            It loads with the Aria from Bach's Goldberg Variations but you can load any MIDI file that you want to by clicking "Choose File"
             <br>
             <br>
-            <p style="text-align: justify">
-            </p>
-          </div>
+            <b>Axes:</b><br>
+            The X-axis represents time, and the Y-axis represents frequency.  
+            <br>
+            <br>
+            <b>View Options:</b><br>
+            Stronger, wider lines represent notes and thinner, lighter lines represent their harmonics.   
+            default: color around the circle of pitches.  A is red, no matter the octave. etc.
+            black and white: all fundamentals are red, harmonics are pinkish.
+            <br>
+            <br>
+            <b>A Note About Harmonics:</b><br>
+            We arbitrarily set the number of harmonics to 10.  We also made it such that the energy of harmonics decays as they get higher, as generally happens in nature.  This is a one size fits all approach for the moment since we have no library of harmonic signatures.  
+            <br>
+            <br>
+            <b>Secondary Analysis:</b><br>
+            We analyze all frequencies overlapping in time.  If these overlapping frequencies are close enough that they would cause perceptual beating patterns, we highlight the "beating pairs" with slowly pulsing objects to indicate this feature.
+            <br>
+            <br>
+            <b>Tuning:</b><br>
+            You can select from Equal Temperament and Just Intonation in 12 keys.
+            <br>
+            <br>
+            <b>Some Cool Things to Try:</b><br>
+            Compare the Bach Aria that loads by default in Equal vs. Just Intonation G because you see different beating patterns which alludes to some musical statements being more resonant or dissonant in the different tuning contexts.  The easiest way to see this is to open two tabs of HarmonicScore.com and, on the second one, change the tuning to Just Intonation G.  Then by toggling between the two tabs you can see the deviation in these two tuning systems.    
+          </p>
         </div>
       </div>
 
@@ -102,23 +122,22 @@
           <h3>About HarmonicScore</h3>
         </div>
         <div class="modal-body">
-          <div class='modal-body'>
-            <br>
-            <p style="text-align: center;">
-              A project by <a href="http://twitter.com/AaronSoloway" target=_blank>@AaronSoloway</a> and <a href="http://twitter.com/rmcclellan" target=_blank>@RMcClellan</a>
-            </p>
-            <br>
-            <br>
-            <p style="text-align: justify">
-              Inspired by <a href="http://www.sonicdesign.org/" target=_blank>Sonic Design</a> by <a href="http://www.sonicdesign.org/cogan.htm" target=_blank>Robert Cogan</a> and <a href="http://www.sonicdesign.org/escot.htm" target=_blank>Pozzi Escot</a> (recommended by Dave Flaherty from <a href="http://cuddlemagic.bandcamp.com/" target=_blank>Cuddle Magic</a>), <a href="http://www.musanim.com/" target=_blank>The Music Animation Machine</a> (found on <a href="http://www.edwardtufte.com/tufte/" target=_blank>Edward Tufte</a>'s <a href="http://www.edwardtufte.com/bboard/" target=_blank>forum</a>), <a href="http://www.amazon.com/Harmonograph-Visual-Guide-Mathematics-Wooden/dp/0802714099" target=_blank>Harmonograph A Visual Guide to the Mathematics of Music</a> by Anthony Ashton, and <a href="http://www.amazon.com/Harmonic-Experience-Harmony-Natural-Expression/dp/0892815604" target=_blank>Harmonic Experience: Tonal Harmony from Its Natural Origins to Its Modern Expression</a> by <a href="http://en.wikipedia.org/wiki/W._A._Mathieu" target=_blank>W. A. Mathieu</a> (discovered thanks to the, apparently deceased, blog of <a href="http://www.lloydwatts.com/" target=_blank>Lloyd Watts</a>, founder of <a href="http://www.audience.com/" target=_blank>Audience</a>).
-            </p>
-            <br>
-            <br>
-            <p style="text-align: center;">
-              First hacked for <a href="http://boston.musichackday.org" target=_blank>Music Hack Day Boston</a> Twenty-Hundred and Twelve
-            </p>
-            <br>
-          </div>
+          <br>
+          <p style="text-align: center;">
+            A project by <a href="http://twitter.com/AaronSoloway" target=_blank>@AaronSoloway</a> and <a href="http://twitter.com/rmcclellan" target=_blank>@RMcClellan</a>
+          </p>
+          <br>
+          <p style="text-align: justify;">
+          HarmonicScore is a web-based visualization tool for understanding the overtonal harmonic interactions of music in different tuning systems (Equal Temperament, Just Intonation in various keys, etc.).  It is optimized for Chrome and is in beta. The input is a MIDI file that can be rendered using a variety of tuning systems, multiple color schemes to highlight different attributes, and secondary analysis of perceptually prominent overtonal interactions. The hope is that this tool will give greater insight into how composers' personal style is exhibited in voicing and tuning system. 
+          <br>
+          <br>
+            Inspired by <a href="http://www.sonicdesign.org/" target=_blank>Sonic Design</a> by <a href="http://www.sonicdesign.org/cogan.htm" target=_blank>Robert Cogan</a> and <a href="http://www.sonicdesign.org/escot.htm" target=_blank>Pozzi Escot</a> (recommended by Dave Flaherty from <a href="http://cuddlemagic.bandcamp.com/" target=_blank>Cuddle Magic</a>), <a href="http://www.musanim.com/" target=_blank>The Music Animation Machine</a> (found on <a href="http://www.edwardtufte.com/tufte/" target=_blank>Edward Tufte</a>'s <a href="http://www.edwardtufte.com/bboard/" target=_blank>forum</a>), <a href="http://www.amazon.com/Harmonograph-Visual-Guide-Mathematics-Wooden/dp/0802714099" target=_blank>Harmonograph A Visual Guide to the Mathematics of Music</a> by Anthony Ashton, and <a href="http://www.amazon.com/Harmonic-Experience-Harmony-Natural-Expression/dp/0892815604" target=_blank>Harmonic Experience: Tonal Harmony from Its Natural Origins to Its Modern Expression</a> by <a href="http://en.wikipedia.org/wiki/W._A._Mathieu" target=_blank>W. A. Mathieu</a> (discovered thanks to the, apparently deceased, blog of <a href="http://www.lloydwatts.com/" target=_blank>Lloyd Watts</a>, founder of <a href="http://www.audience.com/" target=_blank>Audience</a>).
+          </p>
+          <br>
+          <p style="text-align: center;">
+            First hacked for <a href="http://boston.musichackday.org" target=_blank>Music Hack Day Boston</a> Twenty-Hundred and Twelve
+          </p>
+          <br>
         </div>
       </div>
     </body>
